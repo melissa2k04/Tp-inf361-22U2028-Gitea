@@ -61,7 +61,7 @@ services:
       # Timezone
       - TZ=${TZ}
     volumes:
-      # ⚠️ BIND VOLUMES OBLIGATOIRES
+      
       - ./gitea_app/data:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
@@ -89,7 +89,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TZ=${TZ}
     volumes:
-      # ⚠️ BIND VOLUME OBLIGATOIRE
+      
       - ./gitea_app/postgres:/var/lib/postgresql/data
     networks:
       - gitea_network
