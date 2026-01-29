@@ -1,0 +1,108 @@
+# ============================================================
+# Gitea - Docker Compose Configuration
+# ============================================================
+# Étudiante: MNAGUI MPANGOL FELICITE MELISSA
+# Matricule: 22U2028
+# INF3611 - Administration Systèmes - Université de Yaoundé I
+# ============================================================
+
+version: "3.8"
+
+services:
+  # ========================================
+  # GITEA - Serveur Git léger
+  # ========================================
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea_22U2028
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Configuration utilisateur
+      - USER_UID=1000
+      - USER_GID=1000
+      
+      # Configuration base de données
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=${POSTGRES_HOST}:5432
+      - GITEA__database__NAME=${POSTGRES_DB}
+      - GITEA__database__USER=${POSTGRES_USER}
+      - GITEA__database__PASSWD=${POSTGRES_PASSWORD}
+      
+      # Configuration serveur
+      - GITEA__server__DOMAIN=${GITEA_DOMAIN}
+      - GITEA__server__ROOT_URL=${GITEA_ROOT_URL}
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__server__SSH_DOMAIN=${GITEA_DOMAIN}
+      - GITEA__server__SSH_PORT=${GITEA_SSH_PORT}
+      - GITEA__server__SSH_LISTEN_PORT=22
+      - GITEA__server__LFS_START_SERVER=true
+      
+      # Configuration SMTP (email)
+      - GITEA__mailer__ENABLED=true
+      - GITEA__mailer__PROTOCOL=smtps
+      - GITEA__mailer__SMTP_ADDR=${SMTP_HOST}
+      - GITEA__mailer__SMTP_PORT=${SMTP_PORT}
+      - GITEA__mailer__USER=${SMTP_USER}
+      - GITEA__mailer__PASSWD=${SMTP_PASSWORD}
+      - GITEA__mailer__FROM=${SMTP_FROM}
+      
+      # Configuration sécurité
+      - GITEA__security__INSTALL_LOCK=true
+      - GITEA__security__SECRET_KEY=Gitea_Secret_Key_22U2028_INF3611!
+      
+      # Configuration service
+      - GITEA__service__DISABLE_REGISTRATION=false
+      - GITEA__service__REQUIRE_SIGNIN_VIEW=false
+      - GITEA__service__REGISTER_EMAIL_CONFIRM=false
+      
+      # Timezone
+      - TZ=${TZ}
+    volumes:
+      # ⚠️ BIND VOLUMES OBLIGATOIRES
+      - ./gitea_app/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "${GITEA_HTTP_PORT}:3000"
+      - "${GITEA_SSH_PORT}:22"
+    networks:
+      - gitea_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ========================================
+  # POSTGRESQL DATABASE
+  # ========================================
+  db:
+    image: postgres:15-alpine
+    container_name: gitea_db_22U2028
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TZ=${TZ}
+    volumes:
+      # ⚠️ BIND VOLUME OBLIGATOIRE
+      - ./gitea_app/postgres:/var/lib/postgresql/data
+    networks:
+      - gitea_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ========================================
+# RÉSEAU DOCKER (User-defined bridge)
+# ========================================
+networks:
+  gitea_network:
+    name: gitea_network
+    driver: bridge

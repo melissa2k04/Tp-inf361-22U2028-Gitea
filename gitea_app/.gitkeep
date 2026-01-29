@@ -1,0 +1,4 @@
+# Ce dossier contiendra les données persistantes de Gitea
+# - data/ : Dépôts Git, LFS, avatars
+# - config/ : Configuration Gitea
+# - postgres/ : Base de données PostgreSQL

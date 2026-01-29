@@ -1,0 +1,11 @@
+# Ignorer les données sensibles
+.env.local
+*.log
+
+# Ignorer les données de volumes (trop volumineuses pour Git)
+gitea_app/data/
+gitea_app/postgres/
+gitea_app/config/
+
+# Garder les dossiers vides
+!gitea_app/.gitkeep
